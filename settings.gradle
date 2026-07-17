@@ -1,0 +1,10 @@
+rootProject.name = 'washgo-backend'
+
+include 'common'
+include 'auth-service'
+include 'catalog-service'
+include 'order-service'
+include 'logistics-service'
+include 'payment-service'
+include 'notification-service'
+include 'api-gateway'
