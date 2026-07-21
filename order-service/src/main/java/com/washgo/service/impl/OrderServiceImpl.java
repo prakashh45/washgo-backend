@@ -1,5 +1,5 @@
 package com.washgo.service.impl;
-
+import com.washgo.client.NotificationClient;
 import com.washgo.dto.request.CreateOrderRequest;
 import com.washgo.dto.request.OrderItemRequest;
 import com.washgo.dto.request.UpdateOrderStatusRequest;
@@ -17,6 +17,7 @@ import com.washgo.util.OrderNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.washgo.client.LogisticsClient;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,13 +27,18 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+
     private final OrderItemRepository orderItemRepository;
+    private final NotificationClient notificationClient;
+
+    private final LogisticsClient logisticsClient;
 
     @Override
     @Transactional
     public OrderResponse placeOrder(CreateOrderRequest request) {
 
         Order order = new Order();
+
 
         order.setOrderNumber(OrderNumberGenerator.generate());
         order.setCustomerId(request.getCustomerId());
@@ -73,7 +79,26 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+// Logistics
+        try {
+            logisticsClient.assignPickupPartner(
+                    savedOrder.getId(),
+                    savedOrder.getLaundryPartnerId()
+            );
+        } catch (Exception ex) {
+            System.out.println("Logistics Service unavailable: " + ex.getMessage());
+        }
+
+// Notification
+        try {
+            notificationClient.sendOrderPlacedNotification(savedOrder);
+        } catch (Exception ex) {
+            System.out.println("Notification Service unavailable: " + ex.getMessage());
+        }
+
         return mapToResponse(savedOrder);
+
+
     }
 
     @Override
@@ -89,7 +114,6 @@ public class OrderServiceImpl implements OrderService {
 
         return mapToResponse(order);
     }
-
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderByOrderNumber(String orderNumber) {

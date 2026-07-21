@@ -4,9 +4,9 @@ public enum OrderStatus {
 
     PLACED,
 
-    ACCEPTED,
+    PICKUP_ASSIGNED,
 
-    PICKUP_SCHEDULED,
+    PICKUP_ACCEPTED,
 
     PICKED_UP,
 
@@ -21,6 +21,8 @@ public enum OrderStatus {
     QUALITY_CHECK,
 
     READY_FOR_DELIVERY,
+
+    DELIVERY_ASSIGNED,
 
     OUT_FOR_DELIVERY,
 

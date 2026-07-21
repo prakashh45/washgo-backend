@@ -7,4 +7,4 @@ include 'order-service'
 include 'logistics-service'
 include 'payment-service'
 include 'notification-service'
-include 'api-gateway'
+include("api-gateway")
