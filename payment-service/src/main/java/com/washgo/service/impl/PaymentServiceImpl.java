@@ -11,94 +11,131 @@ import com.washgo.exception.ResourceNotFoundException;
 import com.washgo.repository.PaymentRepository;
 import com.washgo.service.PaymentService;
 import com.washgo.util.PaymentNumberGenerator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
 
+
     @Override
     public PaymentResponse createPayment(CreatePaymentRequest request) {
 
+        if (paymentRepository.existsByOrderId(request.getOrderId())) {
+            throw new IllegalStateException(
+                    "Payment already exists for order : "
+                            + request.getOrderId());
+        }
+
         Payment payment = new Payment();
 
-        payment.setPaymentNumber(PaymentNumberGenerator.generatePaymentNumber());
+        payment.setPaymentNumber(
+                PaymentNumberGenerator.generatePaymentNumber());
+
         payment.setOrderId(request.getOrderId());
         payment.setCustomerId(request.getCustomerId());
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod());
         payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setRemarks(request.getRemarks());
 
         Payment savedPayment = paymentRepository.save(payment);
 
         return mapToResponse(savedPayment);
     }
-
     @Override
     public PaymentResponse verifyPayment(VerifyPaymentRequest request) {
 
-        Payment payment = paymentRepository.findByPaymentNumber(request.getPaymentNumber())
+        Payment payment = paymentRepository
+                .findByPaymentNumber(request.getPaymentNumber())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Payment not found with number: " + request.getPaymentNumber()));
+                        new ResourceNotFoundException(
+                                "Payment not found : "
+                                        + request.getPaymentNumber()));
 
-        payment.setGatewayPaymentId(request.getGatewayPaymentId());
-        payment.setGatewayTransactionId(request.getGatewayTransactionId());
+        if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            throw new IllegalStateException(
+                    "Payment already verified.");
+        }
+
+        payment.setGatewayPaymentId(
+                request.getGatewayPaymentId());
+
+        payment.setGatewayTransactionId(
+                request.getGatewayTransactionId());
+
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
 
-        Payment updatedPayment = paymentRepository.save(payment);
+        Payment updated = paymentRepository.save(payment);
 
-        return mapToResponse(updatedPayment);
+        return mapToResponse(updated);
     }
-
     @Override
-    public PaymentResponse refundPayment(RefundPaymentRequest request) {
+    public PaymentResponse refundPayment(
+            RefundPaymentRequest request) {
 
-        Payment payment = paymentRepository.findByPaymentNumber(request.getPaymentNumber())
+        Payment payment = paymentRepository
+                .findByPaymentNumber(request.getPaymentNumber())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Payment not found with number: " + request.getPaymentNumber()));
+                        new ResourceNotFoundException(
+                                "Payment not found"));
+
+        if (payment.getPaymentStatus()
+                != PaymentStatus.SUCCESS) {
+
+            throw new IllegalStateException(
+                    "Only successful payments can be refunded.");
+        }
 
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
+
         payment.setRemarks(request.getReason());
 
-        Payment updatedPayment = paymentRepository.save(payment);
+        Payment updated = paymentRepository.save(payment);
 
-        return mapToResponse(updatedPayment);
+        return mapToResponse(updated);
     }
     @Override
     public PaymentResponse getPaymentById(Long id) {
 
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Payment not found with id: " + id));
+                        new ResourceNotFoundException(
+                                "Payment not found with id : "
+                                        + id));
 
         return mapToResponse(payment);
     }
-
     @Override
-    public PaymentResponse getPaymentByNumber(String paymentNumber) {
+    public PaymentResponse getPaymentByNumber(
+            String paymentNumber) {
 
-        Payment payment = paymentRepository.findByPaymentNumber(paymentNumber)
+        Payment payment = paymentRepository
+                .findByPaymentNumber(paymentNumber)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Payment not found with number: " + paymentNumber));
+                        new ResourceNotFoundException(
+                                "Payment not found"));
 
         return mapToResponse(payment);
     }
-
     @Override
-    public List<PaymentResponse> getPaymentsByOrder(Long orderId) {
+    public List<PaymentResponse> getPaymentsByOrder(
+            Long orderId) {
 
         return paymentRepository.findByOrderId(orderId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
-
     @Override
-    public List<PaymentResponse> getPaymentsByCustomer(Long customerId) {
+    public List<PaymentResponse> getPaymentsByCustomer(
+            Long customerId) {
 
         return paymentRepository.findByCustomerId(customerId)
                 .stream()
@@ -106,21 +143,36 @@ public class PaymentServiceImpl implements PaymentService {
                 .toList();
     }
     @Override
-    public PaymentResponse completeRazorpayPayment(VerifySignatureRequest request) {
+    public PaymentResponse completeRazorpayPayment(
+            VerifySignatureRequest request) {
 
-        Payment payment = paymentRepository.findByPaymentNumber(request.getPaymentNumber())
+        Payment payment = paymentRepository
+                .findByPaymentNumber(request.getPaymentNumber())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Payment not found with number: " + request.getPaymentNumber()));
+                                "Payment not found"));
 
-        payment.setGatewayOrderId(request.getRazorpayOrderId());
-        payment.setGatewayPaymentId(request.getRazorpayPaymentId());
-        payment.setGatewayTransactionId(request.getRazorpayPaymentId());
+        if (payment.getPaymentStatus()
+                == PaymentStatus.SUCCESS) {
+
+            throw new IllegalStateException(
+                    "Payment already completed.");
+        }
+
+        payment.setGatewayOrderId(
+                request.getRazorpayOrderId());
+
+        payment.setGatewayPaymentId(
+                request.getRazorpayPaymentId());
+
+        payment.setGatewayTransactionId(
+                request.getRazorpayPaymentId());
+
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
 
-        Payment saved = paymentRepository.save(payment);
+        Payment updated = paymentRepository.save(payment);
 
-        return mapToResponse(saved);
+        return mapToResponse(updated);
     }
 
     private PaymentResponse mapToResponse(Payment payment) {
@@ -142,4 +194,5 @@ public class PaymentServiceImpl implements PaymentService {
 
         return response;
     }
+
 }

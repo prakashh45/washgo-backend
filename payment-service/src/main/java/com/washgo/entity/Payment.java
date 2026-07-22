@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -39,6 +40,17 @@ public class Payment extends BaseEntity {
     private String gatewayOrderId;
 
     private String gatewayPaymentId;
+
+    @Column(nullable = false, length = 3)
+    private String currency = "INR";
+
+    private String gatewayName;
+
+    private String failureReason;
+
+    private String receiptUrl;
+
+    private LocalDateTime paidAt;
 
     @Column(length = 500)
     private String remarks;

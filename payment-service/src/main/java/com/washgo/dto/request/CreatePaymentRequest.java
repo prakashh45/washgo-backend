@@ -20,4 +20,6 @@ public class CreatePaymentRequest {
 
     @NotNull
     private PaymentMethod paymentMethod;
+
+    private String remarks;
 }
