@@ -85,8 +85,8 @@ public class DeliveryAssignment {
         return deliveryPartner;
     }
 
-    public DeliveryPartner getFullName(){
-        return getFullName();
+    public String getPartnerName() {
+        return deliveryPartner.getDeliveryPartnerName();
     }
 
     public void setDeliveryPartner(DeliveryPartner deliveryPartner) {

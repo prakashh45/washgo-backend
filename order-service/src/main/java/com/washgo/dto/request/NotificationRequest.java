@@ -11,5 +11,6 @@ public class NotificationRequest {
     private String recipient;
     private String title;
     private String message;
-    private String type;
+
+    private NotificationType type;
 }

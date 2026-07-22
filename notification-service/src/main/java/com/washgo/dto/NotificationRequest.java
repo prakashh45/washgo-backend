@@ -22,4 +22,6 @@ public class NotificationRequest {
 
     @NotNull(message = "Notification type is required")
     private NotificationType type;
+
+
 }

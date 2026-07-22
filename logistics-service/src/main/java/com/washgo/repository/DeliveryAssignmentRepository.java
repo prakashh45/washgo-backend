@@ -18,10 +18,11 @@ public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssi
 
     List<DeliveryAssignment> findByLegType(DeliveryLegType legType);
 
-    Optional<DeliveryAssignment> findByOrderIdAndLegType(Long orderId,
-                                                         DeliveryLegType legType);
+    Optional<DeliveryAssignment> findByOrderIdAndLegType(
+            Long orderId,
+            DeliveryLegType legType);
 
-    boolean existsByOrderIdAndLegType(Long orderId,
-                                      DeliveryLegType legType);
-
+    boolean existsByOrderIdAndLegType(
+            Long orderId,
+            DeliveryLegType legType);
 }

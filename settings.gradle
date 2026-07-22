@@ -8,3 +8,5 @@ include 'logistics-service'
 include 'payment-service'
 include 'notification-service'
 include("api-gateway")
+include 'discovery-server'
+include 'config-server'

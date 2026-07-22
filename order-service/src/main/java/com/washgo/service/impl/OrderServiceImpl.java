@@ -1,208 +1,251 @@
-package com.washgo.service.impl;
-import com.washgo.client.NotificationClient;
-import com.washgo.dto.request.CreateOrderRequest;
-import com.washgo.dto.request.OrderItemRequest;
-import com.washgo.dto.request.UpdateOrderStatusRequest;
-import com.washgo.dto.response.OrderItemResponse;
-import com.washgo.dto.response.OrderResponse;
-import com.washgo.entity.Order;
-import com.washgo.entity.OrderItem;
-import com.washgo.enums.OrderStatus;
-import com.washgo.enums.PaymentStatus;
-import com.washgo.exception.ResourceNotFoundException;
-import com.washgo.repository.OrderItemRepository;
-import com.washgo.repository.OrderRepository;
-import com.washgo.service.OrderService;
-import com.washgo.util.OrderNumberGenerator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.washgo.client.LogisticsClient;
+    package com.washgo.service.impl;
+    import com.washgo.client.NotificationClient;
+    import com.washgo.client.dto.AssignDeliveryRequest;
+    import com.washgo.dto.request.CreateOrderRequest;
+    import com.washgo.dto.request.OrderItemRequest;
+    import com.washgo.dto.request.UpdateOrderStatusRequest;
+    import com.washgo.dto.response.OrderItemResponse;
+    import com.washgo.dto.response.OrderResponse;
+    import com.washgo.entity.Order;
+    import com.washgo.entity.OrderItem;
+    import com.washgo.integration.LogisticsIntegrationService;
+    import com.washgo.enums.OrderStatus;
+    import com.washgo.enums.PaymentStatus;
+    import com.washgo.exception.ResourceNotFoundException;
+    import com.washgo.repository.OrderItemRepository;
+    import com.washgo.repository.OrderRepository;
+    import com.washgo.service.OrderService;
+    import com.washgo.util.OrderNumberGenerator;
+    import com.washgo.dto.request.NotificationRequest;
+    import com.washgo.dto.request.NotificationType;
+    import lombok.RequiredArgsConstructor;
+    import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
+    import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+    import com.washgo.kafka.OrderEventProducer;
+    import com.washgo.common.event.OrderCreatedEvent;
+    import java.math.BigDecimal;
+    import java.util.ArrayList;
+    import java.util.List;
+    @Service
+    @RequiredArgsConstructor
+    public class OrderServiceImpl implements OrderService {
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-@Service
-@RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+        private final OrderRepository orderRepository;
 
-    private final OrderRepository orderRepository;
-
-    private final OrderItemRepository orderItemRepository;
-    private final NotificationClient notificationClient;
-
-    private final LogisticsClient logisticsClient;
-
-    @Override
-    @Transactional
-    public OrderResponse placeOrder(CreateOrderRequest request) {
-
-        Order order = new Order();
+        private final OrderItemRepository orderItemRepository;
+        private final NotificationClient notificationClient;
 
 
-        order.setOrderNumber(OrderNumberGenerator.generate());
-        order.setCustomerId(request.getCustomerId());
-        order.setLaundryPartnerId(request.getLaundryPartnerId());
-        order.setPickupAddressId(request.getPickupAddressId());
+        private final LogisticsIntegrationService logisticsIntegrationService;
 
-        order.setOrderStatus(OrderStatus.PLACED);
-        order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setPaymentMethod(request.getPaymentMethod());
+        private final OrderEventProducer orderEventProducer;
 
-        List<OrderItem> orderItems = new ArrayList<>();
+        @Override
+        @Transactional
+        public OrderResponse placeOrder(CreateOrderRequest request) {
 
-        BigDecimal totalAmount = BigDecimal.ZERO;
+            Order order = new Order();
 
-        for (OrderItemRequest itemRequest : request.getItems()) {
 
-            OrderItem item = new OrderItem();
+            order.setOrderNumber(OrderNumberGenerator.generate());
+            order.setCustomerId(request.getCustomerId());
+            order.setLaundryPartnerId(request.getLaundryPartnerId());
+            order.setPickupAddressId(request.getPickupAddressId());
 
-            item.setOrder(order);
-            item.setServiceId(itemRequest.getServiceId());
-            item.setServiceName(itemRequest.getServiceName());
-            item.setQuantity(itemRequest.getQuantity());
-            item.setUnitPrice(itemRequest.getUnitPrice());
+            order.setOrderStatus(OrderStatus.PLACED);
+            order.setPaymentStatus(PaymentStatus.PENDING);
+            order.setPaymentMethod(request.getPaymentMethod());
 
-            BigDecimal totalPrice =
-                    itemRequest.getUnitPrice()
-                            .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
+            List<OrderItem> orderItems = new ArrayList<>();
 
-            item.setTotalPrice(totalPrice);
+            BigDecimal totalAmount = BigDecimal.ZERO;
 
-            totalAmount = totalAmount.add(totalPrice);
+            for (OrderItemRequest itemRequest : request.getItems()) {
 
-            orderItems.add(item);
-        }
+                OrderItem item = new OrderItem();
 
-        order.setOrderItems(orderItems);
-        order.setTotalAmount(totalAmount);
+                item.setOrder(order);
+                item.setServiceId(itemRequest.getServiceId());
+                item.setServiceName(itemRequest.getServiceName());
+                item.setQuantity(itemRequest.getQuantity());
+                item.setUnitPrice(itemRequest.getUnitPrice());
 
-        Order savedOrder = orderRepository.save(order);
+                BigDecimal totalPrice =
+                        itemRequest.getUnitPrice()
+                                .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
 
-// Logistics
-        try {
-            logisticsClient.assignPickupPartner(
-                    savedOrder.getId(),
-                    savedOrder.getLaundryPartnerId()
-            );
-        } catch (Exception ex) {
-            System.out.println("Logistics Service unavailable: " + ex.getMessage());
-        }
+                item.setTotalPrice(totalPrice);
+
+                totalAmount = totalAmount.add(totalPrice);
+
+                orderItems.add(item);
+            }
+
+            order.setOrderItems(orderItems);
+            order.setTotalAmount(totalAmount);
+
+            Order savedOrder = orderRepository.save(order);
+            OrderCreatedEvent event = OrderCreatedEvent.builder()
+                    .orderId(savedOrder.getId())
+                    .orderNumber(savedOrder.getOrderNumber())
+                    .customerId(savedOrder.getCustomerId())
+                    .laundryPartnerId(savedOrder.getLaundryPartnerId())
+                    .totalAmount(savedOrder.getTotalAmount())
+                    .paymentMethod(savedOrder.getPaymentMethod().name())
+                    .orderStatus(savedOrder.getOrderStatus().name())
+                    .build();
+
+            orderEventProducer.publishOrderCreated(event);
+            callLogistics(savedOrder);
 
 // Notification
-        try {
-            notificationClient.sendOrderPlacedNotification(savedOrder);
-        } catch (Exception ex) {
-            System.out.println("Notification Service unavailable: " + ex.getMessage());
+            try {
+
+                NotificationRequest notificationRequest = NotificationRequest.builder()
+                        .userId(String.valueOf(savedOrder.getCustomerId()))
+                        .recipient("Customer")
+                        .title("Order Placed")
+                        .message("Your order " + savedOrder.getOrderNumber() + " has been placed successfully.")
+                        .type(NotificationType.PUSH)
+                        .build();
+
+                notificationClient.sendOrderPlacedNotification(notificationRequest);
+
+            } catch (Exception ex) {
+                System.out.println("Notification Service unavailable: " + ex.getMessage());
+            }
+
+            return mapToResponse(savedOrder);
+
+        }
+        @CircuitBreaker(name = "logisticsService", fallbackMethod = "logisticsFallback")
+        public void callLogistics(Order savedOrder) {
+
+            AssignDeliveryRequest request = new AssignDeliveryRequest();
+            request.setOrderId(savedOrder.getId());
+            request.setDeliveryPartnerId(savedOrder.getLaundryPartnerId());
+            request.setLegType("PICKUP");
+
+            logisticsIntegrationService.assignPickup(request);
+        }
+        public void logisticsFallback(Order savedOrder, Exception ex) {
+
+            System.out.println("======================================");
+            System.out.println("Logistics Service is DOWN");
+            System.out.println("Fallback Executed");
+            System.out.println("Reason : " + ex.getMessage());
+            System.out.println("======================================");
+
+            // Future:
+            // Save pickup request in DB
+            // Publish Kafka event
         }
 
-        return mapToResponse(savedOrder);
 
 
+        @Override
+        @Transactional(readOnly = true)
+        public OrderResponse getOrderById(Long orderId) {
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Order",
+                                    "id",
+                                    orderId));
+
+            return mapToResponse(order);
+        }
+        @Override
+        @Transactional(readOnly = true)
+        public OrderResponse getOrderByOrderNumber(String orderNumber) {
+
+            Order order = orderRepository.findByOrderNumber(orderNumber)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Order",
+                                    "orderNumber",
+                                    orderNumber));
+
+            return mapToResponse(order);
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<OrderResponse> getCustomerOrders(Long customerId) {
+
+            return orderRepository.findByCustomerId(customerId)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<OrderResponse> getPartnerOrders(Long partnerId) {
+
+            return orderRepository.findByLaundryPartnerId(partnerId)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+        @Override
+        @Transactional
+        public OrderResponse updateOrderStatus(Long orderId,
+                                               UpdateOrderStatusRequest request) {
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Order",
+                                    "id",
+                                    orderId));
+
+            order.setOrderStatus(request.getOrderStatus());
+
+            Order updatedOrder = orderRepository.save(order);
+
+            return mapToResponse(updatedOrder);
+        }
+
+        @Override
+        @Transactional
+        public void cancelOrder(Long orderId) {
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Order",
+                                    "id",
+                                    orderId));
+
+            order.setOrderStatus(OrderStatus.CANCELLED);
+
+            orderRepository.save(order);
+        }
+        private OrderResponse mapToResponse(Order order) {
+
+            List<OrderItemResponse> itemResponses = order.getOrderItems()
+                    .stream()
+                    .map(item -> OrderItemResponse.builder()
+                            .serviceId(item.getServiceId())
+                            .serviceName(item.getServiceName())
+                            .quantity(item.getQuantity())
+                            .unitPrice(item.getUnitPrice())
+                            .totalPrice(item.getTotalPrice())
+                            .build())
+                    .toList();
+
+            return OrderResponse.builder()
+                    .id(order.getId())
+                    .orderNumber(order.getOrderNumber())
+                    .customerId(order.getCustomerId())
+                    .laundryPartnerId(order.getLaundryPartnerId())
+                    .orderStatus(order.getOrderStatus())
+                    .paymentStatus(order.getPaymentStatus())
+                    .totalAmount(order.getTotalAmount())
+                    .items(itemResponses)
+                    .build();
+        }
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public OrderResponse getOrderById(Long orderId) {
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order",
-                                "id",
-                                orderId));
-
-        return mapToResponse(order);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public OrderResponse getOrderByOrderNumber(String orderNumber) {
-
-        Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order",
-                                "orderNumber",
-                                orderNumber));
-
-        return mapToResponse(order);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getCustomerOrders(Long customerId) {
-
-        return orderRepository.findByCustomerId(customerId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getPartnerOrders(Long partnerId) {
-
-        return orderRepository.findByLaundryPartnerId(partnerId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-    @Override
-    @Transactional
-    public OrderResponse updateOrderStatus(Long orderId,
-                                           UpdateOrderStatusRequest request) {
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order",
-                                "id",
-                                orderId));
-
-        order.setOrderStatus(request.getOrderStatus());
-
-        Order updatedOrder = orderRepository.save(order);
-
-        return mapToResponse(updatedOrder);
-    }
-
-    @Override
-    @Transactional
-    public void cancelOrder(Long orderId) {
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order",
-                                "id",
-                                orderId));
-
-        order.setOrderStatus(OrderStatus.CANCELLED);
-
-        orderRepository.save(order);
-    }
-    private OrderResponse mapToResponse(Order order) {
-
-        List<OrderItemResponse> itemResponses = order.getOrderItems()
-                .stream()
-                .map(item -> OrderItemResponse.builder()
-                        .serviceId(item.getServiceId())
-                        .serviceName(item.getServiceName())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .totalPrice(item.getTotalPrice())
-                        .build())
-                .toList();
-
-        return OrderResponse.builder()
-                .id(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .customerId(order.getCustomerId())
-                .laundryPartnerId(order.getLaundryPartnerId())
-                .orderStatus(order.getOrderStatus())
-                .paymentStatus(order.getPaymentStatus())
-                .totalAmount(order.getTotalAmount())
-                .items(itemResponses)
-                .build();
-    }
-}

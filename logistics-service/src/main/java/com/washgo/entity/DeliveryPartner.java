@@ -1,7 +1,6 @@
 package com.washgo.entity;
 
 import com.washgo.enums.DeliveryPartnerStatus;
-import com.washgo.enums.DeliveryPartnerStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +17,7 @@ public class DeliveryPartner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String deliveryPatnerName;
+    private String deliveryPartnerName;
 
     private Long userId;
 

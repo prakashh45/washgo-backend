@@ -1,62 +1,26 @@
 package com.washgo.controller;
 
 import com.washgo.dto.NotificationRequest;
-import com.washgo.dto.NotificationResponse;
-import com.washgo.entity.NotificationStatus;
-import com.washgo.service.NotificationService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
-@RequiredArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    @PostMapping("/order-placed")
+    public ResponseEntity<String> sendOrderPlacedNotification(
+            @RequestBody NotificationRequest request) {
 
-    @PostMapping("/send")
-    @ResponseStatus(HttpStatus.CREATED)
-    public NotificationResponse sendNotification(
-            @Valid @RequestBody NotificationRequest request) {
+        System.out.println("======================================");
+        System.out.println("Order Placed Notification");
+        System.out.println("User ID    : " + request.getUserId());
+        System.out.println("Recipient  : " + request.getRecipient());
+        System.out.println("Title      : " + request.getTitle());
+        System.out.println("Message    : " + request.getMessage());
+        System.out.println("Type       : " + request.getType());
+        System.out.println("======================================");
 
-        return notificationService.sendNotification(request);
-    }
-
-    @GetMapping("/{id}")
-    public NotificationResponse getNotificationById(@PathVariable Long id) {
-
-        return notificationService.getNotificationById(id);
-    }
-
-    @GetMapping("/user/{userId}")
-    public List<NotificationResponse> getUserNotifications(
-            @PathVariable String userId) {
-
-        return notificationService.getNotificationsByUser(userId);
-    }
-
-    @GetMapping
-    public List<NotificationResponse> getAllNotifications() {
-
-        return notificationService.getAllNotifications();
-    }
-
-    @PatchMapping("/{id}/status")
-    public NotificationResponse updateStatus(
-            @PathVariable Long id,
-            @RequestParam NotificationStatus status) {
-
-        return notificationService.updateStatus(id, status);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNotification(@PathVariable Long id) {
-
-        notificationService.deleteNotification(id);
+        return ResponseEntity.ok("Notification Sent Successfully");
     }
 }

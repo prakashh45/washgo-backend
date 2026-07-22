@@ -16,6 +16,9 @@ java {
 repositories {
     mavenCentral()
 }
+dependencies {
+    implementation 'org.springframework.kafka:spring-kafka'
+}
 
 dependencies {
 
@@ -27,6 +30,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'
