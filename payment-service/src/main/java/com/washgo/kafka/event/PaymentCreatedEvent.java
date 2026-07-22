@@ -1,0 +1,30 @@
+package com.washgo.kafka.event;
+
+import com.washgo.enums.PaymentMethod;
+import com.washgo.enums.PaymentStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentCreatedEvent {
+
+    private String paymentNumber;
+
+    private Long orderId;
+
+    private Long customerId;
+
+    private BigDecimal amount;
+
+    private PaymentMethod paymentMethod;
+
+    private PaymentStatus paymentStatus;
+}

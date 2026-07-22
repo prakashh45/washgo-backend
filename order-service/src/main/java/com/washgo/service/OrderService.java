@@ -20,6 +20,7 @@ public interface OrderService {
 
     OrderResponse updateOrderStatus(Long orderId,
                                     UpdateOrderStatusRequest request);
+    void markPaymentSuccess(Long orderId, String paymentNumber);
 
     void cancelOrder(Long orderId);
 }

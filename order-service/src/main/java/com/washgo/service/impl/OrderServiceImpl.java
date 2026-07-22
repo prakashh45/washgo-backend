@@ -224,6 +224,19 @@
 
             orderRepository.save(order);
         }
+
+        @Override
+        public void markPaymentSuccess(Long orderId, String paymentNumber) {
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Order not found"));
+
+            order.setPaymentStatus(PaymentStatus.SUCCESS);
+
+            orderRepository.save(order);
+        }
         private OrderResponse mapToResponse(Order order) {
 
             List<OrderItemResponse> itemResponses = order.getOrderItems()

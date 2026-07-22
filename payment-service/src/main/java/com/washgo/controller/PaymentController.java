@@ -1,16 +1,17 @@
 package com.washgo.controller;
 
-import com.washgo.common.ApiResponse;
 import com.washgo.dto.request.CreatePaymentRequest;
 import com.washgo.dto.request.RefundPaymentRequest;
 import com.washgo.dto.request.VerifyPaymentRequest;
+import com.washgo.dto.request.VerifySignatureRequest;
 import com.washgo.dto.response.PaymentResponse;
 import com.washgo.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -21,85 +22,63 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ApiResponse<PaymentResponse> createPayment(
+    public ResponseEntity<PaymentResponse> createPayment(
             @Valid @RequestBody CreatePaymentRequest request) {
 
-        return new ApiResponse<>(
-                true,
-                "Payment created successfully",
-                paymentService.createPayment(request),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(paymentService.createPayment(request));
     }
 
     @PostMapping("/verify")
-    public ApiResponse<PaymentResponse> verifyPayment(
+    public ResponseEntity<PaymentResponse> verifyPayment(
             @Valid @RequestBody VerifyPaymentRequest request) {
 
-        return new ApiResponse<>(
-                true,
-                "Payment verified successfully",
-                paymentService.verifyPayment(request),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(paymentService.verifyPayment(request));
     }
 
     @PostMapping("/refund")
-    public ApiResponse<PaymentResponse> refundPayment(
+    public ResponseEntity<PaymentResponse> refundPayment(
             @Valid @RequestBody RefundPaymentRequest request) {
 
-        return new ApiResponse<>(
-                true,
-                "Payment refunded successfully",
-                paymentService.refundPayment(request),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(paymentService.refundPayment(request));
+    }
+
+    @PostMapping("/razorpay/complete")
+    public ResponseEntity<PaymentResponse> completeRazorpayPayment(
+            @Valid @RequestBody VerifySignatureRequest request) {
+
+        return ResponseEntity.ok(
+                paymentService.completeRazorpayPayment(request));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PaymentResponse> getPaymentById(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponse> getPaymentById(
+            @PathVariable Long id) {
 
-        return new ApiResponse<>(
-                true,
-                "Payment fetched successfully",
-                paymentService.getPaymentById(id),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @GetMapping("/number/{paymentNumber}")
-    public ApiResponse<PaymentResponse> getPaymentByNumber(
+    public ResponseEntity<PaymentResponse> getPaymentByNumber(
             @PathVariable String paymentNumber) {
 
-        return new ApiResponse<>(
-                true,
-                "Payment fetched successfully",
-                paymentService.getPaymentByNumber(paymentNumber),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(
+                paymentService.getPaymentByNumber(paymentNumber));
     }
 
     @GetMapping("/order/{orderId}")
-    public ApiResponse<List<PaymentResponse>> getPaymentsByOrder(
+    public ResponseEntity<List<PaymentResponse>> getPaymentsByOrder(
             @PathVariable Long orderId) {
 
-        return new ApiResponse<>(
-                true,
-                "Payments fetched successfully",
-                paymentService.getPaymentsByOrder(orderId),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(
+                paymentService.getPaymentsByOrder(orderId));
     }
 
     @GetMapping("/customer/{customerId}")
-    public ApiResponse<List<PaymentResponse>> getPaymentsByCustomer(
+    public ResponseEntity<List<PaymentResponse>> getPaymentsByCustomer(
             @PathVariable Long customerId) {
 
-        return new ApiResponse<>(
-                true,
-                "Payments fetched successfully",
-                paymentService.getPaymentsByCustomer(customerId),
-                LocalDateTime.now()
-        );
+        return ResponseEntity.ok(
+                paymentService.getPaymentsByCustomer(customerId));
     }
 }
