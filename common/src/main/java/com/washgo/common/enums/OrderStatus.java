@@ -1,4 +1,4 @@
-package com.washgo.enums;
+package com.washgo.common.enums;
 
 public enum OrderStatus {
 

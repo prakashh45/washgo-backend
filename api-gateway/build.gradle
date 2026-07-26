@@ -21,7 +21,9 @@ ext {
     set('springCloudVersion', "2025.0.1")
     set('grpcVersion', "1.69.0")
 }
-
+dependencies {
+    implementation project(":common")
+}
 dependencies {
 
     // Spring Cloud Gateway
@@ -31,6 +33,7 @@ dependencies {
 
     // Explicit WebFlux (required)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'

@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/v1/auth/**").permitAll()
                         .pathMatchers("/actuator/**").permitAll()
+                        .pathMatchers("/api/v1/orders/health").permitAll()   // <-- Add this
                         .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .pathMatchers("/api/v1/partner/**").hasRole("PARTNER")
                         .pathMatchers("/api/v1/customer/**").hasRole("CUSTOMER")

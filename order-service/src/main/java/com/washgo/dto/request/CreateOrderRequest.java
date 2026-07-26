@@ -1,6 +1,6 @@
 package com.washgo.dto.request;
 
-import com.washgo.enums.PaymentMethod;
+import com.washgo.common.enums.PaymentMethod;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.washgo.entity;
+package com.washgo.catalog.common;
 
 import jakarta.persistence.*;
 import lombok.Getter;

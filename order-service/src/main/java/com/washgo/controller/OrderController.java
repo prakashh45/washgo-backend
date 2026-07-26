@@ -60,6 +60,10 @@ public class OrderController {
 
         return orderService.updateOrderStatus(orderId, request);
     }
+    @GetMapping("/health")
+    public String health() {
+        return "Order Service is UP";
+    }
 
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -1,5 +1,6 @@
 package com.washgo.entity;
 
+import com.washgo.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

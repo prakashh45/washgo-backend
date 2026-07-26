@@ -7,6 +7,7 @@ import com.washgo.auth.entity.User;
 import com.washgo.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.washgo.common.enums.Role;
 
 @RestController
 @RequestMapping("/api/v1/auth")

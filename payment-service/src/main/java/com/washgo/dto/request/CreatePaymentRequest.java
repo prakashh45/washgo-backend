@@ -1,11 +1,10 @@
 package com.washgo.dto.request;
 
-import com.washgo.enums.PaymentMethod;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-
+import com.washgo.common.enums.PaymentMethod;
 @Data
 public class CreatePaymentRequest {
 

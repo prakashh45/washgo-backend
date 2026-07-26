@@ -1,7 +1,8 @@
 package com.washgo.entity;
 
-import com.washgo.enums.OrderStatus;
-import com.washgo.enums.PaymentMethod;
+import com.washgo.common.BaseEntity;
+import com.washgo.common.enums.OrderStatus;
+import com.washgo.common.enums.PaymentMethod;
 import com.washgo.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;

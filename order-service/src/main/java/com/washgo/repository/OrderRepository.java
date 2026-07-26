@@ -1,7 +1,7 @@
 package com.washgo.repository;
 
+import com.washgo.common.enums.OrderStatus;
 import com.washgo.entity.Order;
-import com.washgo.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

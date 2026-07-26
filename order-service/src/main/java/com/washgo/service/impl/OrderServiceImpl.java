@@ -1,6 +1,7 @@
     package com.washgo.service.impl;
     import com.washgo.client.NotificationClient;
     import com.washgo.client.dto.AssignDeliveryRequest;
+    import com.washgo.common.enums.OrderStatus;
     import com.washgo.dto.request.CreateOrderRequest;
     import com.washgo.dto.request.OrderItemRequest;
     import com.washgo.dto.request.UpdateOrderStatusRequest;
@@ -9,7 +10,6 @@
     import com.washgo.entity.Order;
     import com.washgo.entity.OrderItem;
     import com.washgo.integration.LogisticsIntegrationService;
-    import com.washgo.enums.OrderStatus;
     import com.washgo.enums.PaymentStatus;
     import com.washgo.exception.ResourceNotFoundException;
     import com.washgo.repository.OrderItemRepository;
@@ -92,8 +92,8 @@
                     .customerId(savedOrder.getCustomerId())
                     .laundryPartnerId(savedOrder.getLaundryPartnerId())
                     .totalAmount(savedOrder.getTotalAmount())
-                    .paymentMethod(savedOrder.getPaymentMethod().name())
-                    .orderStatus(savedOrder.getOrderStatus().name())
+                    .paymentMethod(savedOrder.getPaymentMethod())
+                    .orderStatus(savedOrder.getOrderStatus())
                     .build();
 
             orderEventProducer.publishOrderCreated(event);

@@ -1,12 +1,11 @@
 package com.washgo.dto.response;
 
-import com.washgo.enums.PaymentMethod;
 import com.washgo.enums.PaymentStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import com.washgo.common.enums.PaymentMethod;
 @Data
 public class PaymentResponse {
 

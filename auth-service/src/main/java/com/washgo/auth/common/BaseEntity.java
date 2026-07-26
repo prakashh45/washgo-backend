@@ -1,4 +1,4 @@
-package com.washgo.common.entity;
+package com.washgo.auth.common;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public abstract class BaseEntity {
     private Long id;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate

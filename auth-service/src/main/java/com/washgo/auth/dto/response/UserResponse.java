@@ -1,7 +1,9 @@
 package com.washgo.auth.dto.response;
 
-import com.washgo.auth.enums.Role;
+import com.washgo.common.enums.Role;
 import lombok.*;
+
+import java.util.UUID;
 
 
 @Getter
@@ -11,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 public class UserResponse {
 
-    private  Long id ;
+    private UUID id;
     private  String firebaseUid;
     private String email;
     private String fullName;

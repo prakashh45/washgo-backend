@@ -1,6 +1,5 @@
 package com.washgo.kafka.event;
 
-import com.washgo.enums.PaymentMethod;
 import com.washgo.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.math.BigDecimal;
-
+import com.washgo.common.enums.PaymentMethod;
 @Data
 @Builder
 @NoArgsConstructor
