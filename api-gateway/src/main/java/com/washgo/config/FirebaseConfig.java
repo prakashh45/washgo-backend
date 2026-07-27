@@ -13,37 +13,28 @@ public class FirebaseConfig {
 
     @PostConstruct
     public void initialize() {
-
         try {
-
-            // Prevent duplicate initialization
-            if (!FirebaseApp.getApps().isEmpty()) {
-                return;
-            }
-
-            InputStream serviceAccount = FirebaseConfig.class
-                    .getClassLoader()
-                    .getResourceAsStream("firebase-service-account.json");
-
-            if (serviceAccount == null) {
-                throw new RuntimeException("Could not find firebase-service-account.json");
-            }
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
             if (FirebaseApp.getApps().isEmpty()) {
+
+                InputStream serviceAccount =
+                        FirebaseConfig.class.getClassLoader()
+                                .getResourceAsStream("firebase-service-account.json");
+
+                if (serviceAccount == null) {
+                    throw new RuntimeException("Could not find firebase-service-account.json");
+                }
+
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+
                 FirebaseApp.initializeApp(options);
             }
-            FirebaseApp.initializeApp(options);
 
-            System.out.println("=================================");
-            System.out.println("Firebase Initialized Successfully");
-            System.out.println("=================================");
+            System.out.println("Firebase initialized successfully");
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize Firebase", e);
         }
     }
-}
+    }
