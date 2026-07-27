@@ -5,25 +5,45 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
 import java.io.InputStream;
+
 @Configuration
 public class FirebaseConfig {
 
     @PostConstruct
-    public void initialize() throws IOException {
+    public void initialize() {
 
-        InputStream serviceAccount =
-                new ClassPathResource("firebase-service-account.json").getInputStream();
+        try {
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build();
+            // Prevent duplicate initialization
+            if (!FirebaseApp.getApps().isEmpty()) {
+                return;
+            }
 
-        if (FirebaseApp.getApps().isEmpty()) {
+            InputStream serviceAccount = FirebaseConfig.class
+                    .getClassLoader()
+                    .getResourceAsStream("firebase-service-account.json");
+
+            if (serviceAccount == null) {
+                throw new RuntimeException("Could not find firebase-service-account.json");
+            }
+
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
             FirebaseApp.initializeApp(options);
+
+            System.out.println("=================================");
+            System.out.println("Firebase Initialized Successfully");
+            System.out.println("=================================");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Firebase", e);
         }
     }
 }

@@ -20,13 +20,13 @@ public class FirebaseConfig {
                 return;
             }
 
-            InputStream serviceAccount =
-                    FirebaseConfig.class
-                            .getClassLoader()
-                            .getResourceAsStream("firebase/serviceAccountKey.json");
+            InputStream serviceAccount = FirebaseConfig.class
+                    .getClassLoader()
+                    .getResourceAsStream("firebase/serviceAccountKey.json");
 
             if (serviceAccount == null) {
-                throw new RuntimeException("Could not find firebase/serviceAccountKey.json");
+                throw new RuntimeException(
+                        "Could not find firebase/serviceAccountKey.json in resources");
             }
 
             FirebaseOptions options = FirebaseOptions.builder()
@@ -44,4 +44,4 @@ public class FirebaseConfig {
             throw new RuntimeException("Firebase initialization failed", e);
         }
     }
-}
+    }
