@@ -18,10 +18,9 @@ repositories {
 dependencies {
 
     // Spring
-
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'jakarta.validation:jakarta.validation-api'
-    implementation 'org.springframework.kafka:spring-kafka'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
