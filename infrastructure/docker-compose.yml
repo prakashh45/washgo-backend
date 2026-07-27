@@ -336,6 +336,8 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       discovery-server:
@@ -343,14 +345,10 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
+      SPRING_DATASOURCE_USERNAME: washgo
+      SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
     networks:
       - washgo-network
-
-networks:
-  washgo-network:
-    driver: bridge
-
-volumes:
-  postgres-data:
