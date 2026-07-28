@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   # ==========================================================
@@ -91,18 +89,15 @@ services:
   # Config Server
   # ==========================================================
   config-server:
+    image: ghcr.io/prakashh45/config-server:latest
     container_name: washgo-config-server
-    build:
-      context: ..
-      dockerfile: config-server/Dockerfile
-
     restart: unless-stopped
 
     ports:
       - "8888:8888"
 
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health || exit 1" ]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -112,15 +107,11 @@ services:
       - washgo-network
 
   # ==========================================================
-  # Eureka Server
+  # Eureka Discovery Server
   # ==========================================================
   discovery-server:
+    image: ghcr.io/prakashh45/discovery-server:latest
     container_name: washgo-discovery-server
-
-    build:
-      context: ..
-      dockerfile: discovery-server/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -130,6 +121,12 @@ services:
     ports:
       - "8761:8761"
 
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
     networks:
       - washgo-network
 
@@ -137,12 +134,8 @@ services:
   # API Gateway
   # ==========================================================
   api-gateway:
+    image: ghcr.io/prakashh45/api-gateway:latest
     container_name: washgo-api-gateway
-
-    build:
-      context: ..
-      dockerfile: api-gateway/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -160,19 +153,24 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
     networks:
       - washgo-network
+
+
+
 
   # ==========================================================
   # Auth Service
   # ==========================================================
   auth-service:
+    image: ghcr.io/prakashh45/auth-service:latest
     container_name: washgo-auth-service
-
-    build:
-      context: ..
-      dockerfile: auth-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -180,7 +178,6 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-
       discovery-server:
         condition: service_started
 
@@ -189,6 +186,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
       SPRING_DATASOURCE_PASSWORD: root
+
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
     networks:
       - washgo-network
@@ -197,12 +200,8 @@ services:
   # Catalog Service
   # ==========================================================
   catalog-service:
+    image: ghcr.io/prakashh45/catalog-service:latest
     container_name: washgo-catalog-service
-
-    build:
-      context: ..
-      dockerfile: catalog-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -219,6 +218,12 @@ services:
       SPRING_DATASOURCE_USERNAME: washgo
       SPRING_DATASOURCE_PASSWORD: root
 
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8082/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
     networks:
       - washgo-network
 
@@ -226,12 +231,8 @@ services:
   # Order Service
   # ==========================================================
   order-service:
+    image: ghcr.io/prakashh45/order-service:latest
     container_name: washgo-order-service
-
-    build:
-      context: ..
-      dockerfile: order-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -254,6 +255,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8083/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
     networks:
       - washgo-network
 
@@ -261,12 +268,8 @@ services:
   # Payment Service
   # ==========================================================
   payment-service:
+    image: ghcr.io/prakashh45/payment-service:latest
     container_name: washgo-payment-service
-
-    build:
-      context: ..
-      dockerfile: payment-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -285,6 +288,12 @@ services:
       SPRING_DATASOURCE_USERNAME: washgo
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8084/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
     networks:
       - washgo-network
@@ -293,12 +302,8 @@ services:
   # Logistics Service
   # ==========================================================
   logistics-service:
+    image: ghcr.io/prakashh45/logistics-service:latest
     container_name: washgo-logistics-service
-
-    build:
-      context: ..
-      dockerfile: logistics-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -318,6 +323,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8085/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
     networks:
       - washgo-network
 
@@ -325,12 +336,8 @@ services:
   # Notification Service
   # ==========================================================
   notification-service:
+    image: ghcr.io/prakashh45/notification-service:latest
     container_name: washgo-notification-service
-
-    build:
-      context: ..
-      dockerfile: notification-service/Dockerfile
-
     restart: unless-stopped
 
     depends_on:
@@ -347,11 +354,19 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: rnginxoot
+      SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    healthcheck:
+      test: ["CMD-SHELL","wget -qO- http://localhost:8086/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
     networks:
       - washgo-network
+
+
 
   # ==========================================================
   # Nginx Reverse Proxy
@@ -359,11 +374,11 @@ services:
   nginx:
     image: nginx:1.28-alpine
     container_name: washgo-nginx
-
     restart: unless-stopped
 
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_started
 
     ports:
       - "80:80"
@@ -372,5 +387,24 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
 
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
     networks:
       - washgo-network
+
+# ==========================================================
+# Networks
+# ==========================================================
+networks:
+  washgo-network:
+    driver: bridge
+
+# ==========================================================
+# Volumes
+# ==========================================================
+volumes:
+  postgres-data:
