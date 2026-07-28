@@ -47,47 +47,49 @@ jobs:
 
       - name: Build & Push Config Server
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/config-server:latest ./config-server
+          docker build -f config-server/Dockerfile -t $REGISTRY/$IMAGE_OWNER/config-server:latest .
           docker push $REGISTRY/$IMAGE_OWNER/config-server:latest
+                                                          
+          
 
       - name: Build & Push Discovery Server
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/discovery-server:latest ./discovery-server
+          docker build -f discovery-server/Dockerfile -t $REGISTRY/$IMAGE_OWNER/discovery-server:latest .
           docker push $REGISTRY/$IMAGE_OWNER/discovery-server:latest
 
       - name: Build & Push API Gateway
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/api-gateway:latest ./api-gateway
+          docker build -f api-gateway/Dockerfile -t $REGISTRY/$IMAGE_OWNER/api-gateway:latest .
           docker push $REGISTRY/$IMAGE_OWNER/api-gateway:latest
 
       - name: Build & Push Auth Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/auth-service:latest ./auth-service
+          docker build -f auth-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/auth-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/auth-service:latest
 
       - name: Build & Push Catalog Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/catalog-service:latest ./catalog-service
+          docker build -f catalog-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/catalog-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/catalog-service:latest
 
       - name: Build & Push Order Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/order-service:latest ./order-service
+          docker build -f order-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/order-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/order-service:latest
 
       - name: Build & Push Payment Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/payment-service:latest ./payment-service
+          docker build -f payment-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/payment-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/payment-service:latest
 
       - name: Build & Push Logistics Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/logistics-service:latest ./logistics-service
+          docker build -f logistics-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/logistics-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/logistics-service:latest
 
       - name: Build & Push Notification Service
         run: |
-          docker build -t $REGISTRY/$IMAGE_OWNER/notification-service:latest ./notification-service
+          docker build -f notification-service/Dockerfile -t $REGISTRY/$IMAGE_OWNER/notification-service:latest .
           docker push $REGISTRY/$IMAGE_OWNER/notification-service:latest
 
   deploy:
