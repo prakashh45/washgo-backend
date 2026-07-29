@@ -88,13 +88,10 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to AWS EC2
-    needs: build-and-push-images
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: Test SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -102,37 +99,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           timeout: 30s
-          command_timeout: 20m
-
+          command_timeout: 1m
+          debug: true
           script: |
-            set -euxo pipefail
-
-            echo "========== CONNECTED =========="
-            whoami
-            hostname
-            pwd
-
-            cd /home/ec2-user/washgo-backend/infrastructure
-
-            echo "========== DOCKER =========="
-            docker --version
-            docker compose version
-
-            echo "========== LOGIN GHCR =========="
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
-            -u "${{ secrets.GHCR_USERNAME }}" \
-            --password-stdin
-
-            echo "========== PULL IMAGES =========="
-            docker compose pull
-
-            echo "========== START CONTAINERS =========="
-            docker compose up -d --remove-orphans
-
-            echo "========== CLEANUP =========="
-            docker image prune -af
-
-            echo "========== RUNNING CONTAINERS =========="
-            docker ps
-
-            echo "========== DEPLOYMENT COMPLETE =========="
+            echo "HELLO FROM EC2"
