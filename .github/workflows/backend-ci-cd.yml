@@ -102,4 +102,6 @@ jobs:
           command_timeout: 1m
           debug: true
           script: |
-            echo "HELLO FROM EC2"
+            set -x
+            echo "HELLO"
+            exit 0
