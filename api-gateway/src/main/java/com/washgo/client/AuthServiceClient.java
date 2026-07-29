@@ -17,6 +17,7 @@ public class AuthServiceClient {
 
     /**
      * Synchronize Firebase user with Auth Service.
+     * Calls the internal endpoint exposed by InternalUserController.
      */
     public Mono<SyncUserResponse> syncUser(
             String firebaseUid,
@@ -36,7 +37,7 @@ public class AuthServiceClient {
 
         return webClient
                 .post()
-                .uri("/internal/auth/sync")
+                .uri("/internal/users/sync")
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(SyncUserResponse.class);

@@ -9,9 +9,9 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: washgo_db
-      POSTGRES_USER: washgo
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ${POSTGRES_DB:-washgo_db}
+      POSTGRES_USER: ${POSTGRES_USER:-washgo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
 
     ports:
       - "5432:5432"
@@ -20,7 +20,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U washgo"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-washgo}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -152,6 +152,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WASHGO_GATEWAY_SECRET: ${WASHGO_GATEWAY_SECRET:-default-gateway-secret-key-12345}
 
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
@@ -162,9 +163,6 @@ services:
     networks:
       - washgo-network
 
-
-
-
   # ==========================================================
   # Auth Service
   # ==========================================================
@@ -172,6 +170,9 @@ services:
     image: ghcr.io/prakashh45/auth-service:latest
     container_name: washgo-auth-service
     restart: unless-stopped
+
+    ports:
+      - "8081:8081"
 
     depends_on:
       config-server:
@@ -183,9 +184,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
 
     healthcheck:
       test: ["CMD-SHELL","wget -qO- http://localhost:8081/actuator/health || exit 1"]
@@ -204,6 +205,9 @@ services:
     container_name: washgo-catalog-service
     restart: unless-stopped
 
+    ports:
+      - "8082:8082"
+
     depends_on:
       config-server:
         condition: service_healthy
@@ -214,9 +218,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
 
     healthcheck:
       test: ["CMD-SHELL","wget -qO- http://localhost:8082/actuator/health || exit 1"]
@@ -250,9 +254,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
     healthcheck:
@@ -272,6 +276,9 @@ services:
     container_name: washgo-payment-service
     restart: unless-stopped
 
+    ports:
+      - "8084:8084"
+
     depends_on:
       config-server:
         condition: service_healthy
@@ -284,9 +291,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
     healthcheck:
@@ -306,6 +313,9 @@ services:
     container_name: washgo-logistics-service
     restart: unless-stopped
 
+    ports:
+      - "8085:8085"
+
     depends_on:
       config-server:
         condition: service_healthy
@@ -318,9 +328,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
     healthcheck:
@@ -340,6 +350,9 @@ services:
     container_name: washgo-notification-service
     restart: unless-stopped
 
+    ports:
+      - "8086:8086"
+
     depends_on:
       config-server:
         condition: service_healthy
@@ -352,9 +365,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
-      SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-washgo_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-washgo}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
     healthcheck:
@@ -365,8 +378,6 @@ services:
 
     networks:
       - washgo-network
-
-
 
   # ==========================================================
   # Nginx Reverse Proxy

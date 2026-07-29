@@ -1,5 +1,6 @@
 package com.washgo.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -7,14 +8,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
+    @Value("${washgo.auth-service.url:http://localhost:8081}")
+    private String authServiceUrl;
+
     @Bean(name = "authServiceWebClient")
     public WebClient authServiceWebClient(WebClient.Builder builder) {
-
         return builder
-                .baseUrl("http://localhost:8081")
+                .baseUrl(authServiceUrl)
                 .build();
-
-        // If using Eureka later:
-        // .baseUrl("http://AUTH-SERVICE")
     }
 }
