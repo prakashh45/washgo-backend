@@ -75,15 +75,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker Image for ${{ matrix.service }}
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.service }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.service }}:${{ github.sha }}
+            ghcr.io/prakashh45/${{ matrix.service }}:latest
+            ghcr.io/prakashh45/${{ matrix.service }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy Services via SSH
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -102,23 +102,37 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           timeout: 30s
-          command_timeout: 10m
+          command_timeout: 20m
+
           script: |
-            echo "Successfully connected to EC2!"
-            cd /home/ec2-user/washgo-backend/infrastructure || cd ~/washgo-backend/infrastructure
+            set -euxo pipefail
 
-            PAT="${{ secrets.GHCR_PAT }}"
-            UNAME="${{ secrets.GHCR_USERNAME }}"
-            if [ -z "$PAT" ]; then
-              PAT="${{ secrets.GITHUB_TOKEN }}"
-              UNAME="${{ github.actor }}"
-            fi
+            echo "========== CONNECTED =========="
+            whoami
+            hostname
+            pwd
 
-            echo "$PAT" | docker login ghcr.io -u "$UNAME" --password-stdin
+            cd /home/ec2-user/washgo-backend/infrastructure
 
+            echo "========== DOCKER =========="
+            docker --version
+            docker compose version
+
+            echo "========== LOGIN GHCR =========="
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io \
+              -u "${{ secrets.GHCR_USERNAME }}" \
+              --password-stdin
+
+            echo "========== PULL IMAGES =========="
             docker compose pull
+
+            echo "========== START CONTAINERS =========="
             docker compose up -d --remove-orphans
+
+            echo "========== CLEANUP =========="
             docker image prune -af
 
-            echo "=== Deployment Status ==="
+            echo "========== RUNNING CONTAINERS =========="
             docker ps
+
+            echo "========== DEPLOYMENT COMPLETE =========="
