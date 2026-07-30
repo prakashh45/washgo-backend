@@ -1,0 +1,124 @@
+version: "3.9"
+
+services:
+    order-service:
+             image: ghcr.io/prakashh45/order-service:latest
+             container_name: washgo-order-service
+             restart: unless-stopped
+
+             ports:
+               - "8083:8083"
+
+             environment:
+               SPRING_PROFILES_ACTIVE: docker
+
+               SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
+               EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
+
+               SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+               SPRING_DATASOURCE_USERNAME: washgo
+               SPRING_DATASOURCE_PASSWORD: root
+
+               SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+
+             healthcheck:
+               test: ["CMD-SHELL","wget -qO- http://localhost:8083/actuator/health || exit 1"]
+               interval: 20s
+               timeout: 10s
+               retries: 10
+
+             networks:
+               - washgo-network
+
+    payment-service:
+      image: ghcr.io/prakashh45/payment-service:latest
+      container_name: washgo-payment-service
+      restart: unless-stopped
+
+      ports:
+        - "8084:8084"
+
+      environment:
+        SPRING_PROFILES_ACTIVE: docker
+
+        SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
+        EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
+
+        SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+        SPRING_DATASOURCE_USERNAME: washgo
+        SPRING_DATASOURCE_PASSWORD: root
+
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+
+      healthcheck:
+        test: [ "CMD-SHELL","wget -qO- http://localhost:8084/actuator/health || exit 1" ]
+        interval: 20s
+        timeout: 10s
+        retries: 10
+
+      networks:
+        - washgo-network
+
+    logistics-service:
+      image: ghcr.io/prakashh45/logistics-service:latest
+      container_name: washgo-logistics-service
+      restart: unless-stopped
+
+      ports:
+        - "8085:8085"
+
+      environment:
+        SPRING_PROFILES_ACTIVE: docker
+
+        SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
+        EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
+
+        SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+        SPRING_DATASOURCE_USERNAME: washgo
+        SPRING_DATASOURCE_PASSWORD: root
+
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+
+      healthcheck:
+        test: ["CMD-SHELL","wget -qO- http://localhost:8085/actuator/health || exit 1"]
+        interval: 20s
+        timeout: 10s
+        retries: 10
+
+      networks:
+        - washgo-network
+
+    notification-service:
+      image: ghcr.io/prakashh45/notification-service:latest
+      container_name: washgo-notification-service
+      restart: unless-stopped
+
+      ports:
+        - "8086:8086"
+
+      environment:
+        SPRING_PROFILES_ACTIVE: docker
+
+        SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
+        EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
+
+        SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+        SPRING_DATASOURCE_USERNAME: washgo
+        SPRING_DATASOURCE_PASSWORD: root
+
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+
+      healthcheck:
+        test: ["CMD-SHELL","wget -qO- http://localhost:8086/actuator/health || exit 1"]
+        interval: 20s
+        timeout: 10s
+        retries: 10
+
+      networks:
+        - washgo-network
+
+
+
+networks:
+  washgo-network:
+    driver: bridge

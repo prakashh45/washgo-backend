@@ -24,11 +24,15 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       - discovery-server
       - auth-service
       - catalog-service
-      - order-service
 
   auth-service:
     image: ghcr.io/prakashh45/auth-service:latest
@@ -36,6 +40,13 @@ services:
     restart: unless-stopped
     ports:
       - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
+      SPRING_DATASOURCE_USERNAME: washgo
+      SPRING_DATASOURCE_PASSWORD: root
     depends_on:
       - discovery-server
 
@@ -45,6 +56,13 @@ services:
     restart: unless-stopped
     ports:
       - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
+      SPRING_DATASOURCE_USERNAME: washgo
+      SPRING_DATASOURCE_PASSWORD: root
     depends_on:
       - discovery-server
 
@@ -54,6 +72,14 @@ services:
     restart: unless-stopped
     ports:
       - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
+      SPRING_DATASOURCE_USERNAME: washgo
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       - discovery-server
 

@@ -112,13 +112,14 @@ jobs:
             git fetch origin
              git reset --hard origin/main
               git clean -fd
-            
-            docker compose -f docker-compose.ec2-1.yml pull
-            
-            docker compose -f docker-compose.ec2-1.yml down
-            
-            docker compose -f docker-compose.ec2-1.yml up -d
-            
+
+            cd /home/ec2-user/washgo-backend/infrastructure
+  
+              docker compose pull
+  
+              docker compose down
+  
+              docker compose up -d
             docker image prune -af
             
             docker ps
@@ -150,12 +151,11 @@ jobs:
             git fetch origin
              git reset --hard origin/main
               git clean -fd
-
-            docker compose -f docker-compose.ec2-2.yml pull
-
-            docker compose -f docker-compose.ec2-2.yml down
-
-            docker compose -f docker-compose.ec2-2.yml up -d
+            cd /home/ec2-user/washgo-backend/infrastructure
+  
+            docker compose pull
+            docker compose down
+            docker compose up -d
 
             docker image prune -af
 
