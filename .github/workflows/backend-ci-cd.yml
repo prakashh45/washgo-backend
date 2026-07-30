@@ -110,12 +110,13 @@ jobs:
             -u ${{ github.actor }} \
             --password-stdin
             git fetch origin
-             git reset --hard origin/main
-              git clean -fd
-            
+            git reset --hard origin/main
+            git clean -fd
+  
             docker compose -f docker-compose.ec2-1.yml pull
             docker compose -f docker-compose.ec2-1.yml down
             docker compose -f docker-compose.ec2-1.yml up -d
+  
             docker image prune -af
             
             docker ps
@@ -143,16 +144,16 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
             -u ${{ github.actor }} \
             --password-stdin
-
+            
             git fetch origin
-             git reset --hard origin/main
-              git clean -fd
-            cd /home/ec2-user/washgo-backend/infrastructure
-
-           docker compose -f docker-compose.ec2-1.yml pull
-           docker compose -f docker-compose.ec2-1.yml down
-           docker compose -f docker-compose.ec2-1.yml up -d
-
-            docker image prune -af
-
-            docker ps
+            git reset --hard origin/main
+            git clean -fd
+  
+              docker compose -f docker-compose.ec2-2.yml pull
+              docker compose -f docker-compose.ec2-2.yml down
+              docker compose -f docker-compose.ec2-2.yml up -d
+  
+              docker image prune -af
+  
+  
+             docker ps
