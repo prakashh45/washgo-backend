@@ -97,7 +97,7 @@ jobs:
       - name: Deploy to EC2-1
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST_1 }}
+          host: 16.171.148.177
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
@@ -133,7 +133,7 @@ jobs:
       - name: Deploy to EC2-2
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST_2 }}
+          host: 13.51.55.166
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
