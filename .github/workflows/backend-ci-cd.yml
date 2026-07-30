@@ -109,8 +109,9 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
             -u ${{ github.actor }} \
             --password-stdin
-            
-            git pull origin main
+            git fetch origin
+             git reset --hard origin/main
+              git clean -fd
             
             docker compose -f docker-compose.ec2-1.yml pull
             
@@ -146,7 +147,9 @@ jobs:
             -u ${{ github.actor }} \
             --password-stdin
 
-            git pull origin main
+            git fetch origin
+             git reset --hard origin/main
+              git clean -fd
 
             docker compose -f docker-compose.ec2-2.yml pull
 
