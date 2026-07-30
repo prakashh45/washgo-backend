@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+
+  payment-service:
+    image: ghcr.io/prakashh45/payment-service:latest
+    container_name: payment-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+
+  logistics-service:
+    image: ghcr.io/prakashh45/logistics-service:latest
+    container_name: logistics-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+
+  notification-service:
+    image: ghcr.io/prakashh45/notification-service:latest
+    container_name: notification-service
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+
+
+networks:
+  default:
+    name: washgo-network
