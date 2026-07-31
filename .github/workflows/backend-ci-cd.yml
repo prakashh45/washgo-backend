@@ -136,6 +136,13 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
+            cat > .env <<'EOF'
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            EC2_1_PRIVATE_IP=${{ secrets.EC2_1_PRIVATE_IP }}
+            WASHGO_GATEWAY_SECRET=${{ secrets.WASHGO_GATEWAY_SECRET }}
+            FIREBASE_CREDENTIALS_BASE64=${{ secrets.API_GATEWAY_FIREBASE_B64 }}
+            EOF
+
             docker compose -f docker-compose.ec2-1.yml pull
             docker compose -f docker-compose.ec2-1.yml down
             docker compose -f docker-compose.ec2-1.yml up -d
@@ -170,6 +177,15 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             git clean -fd
+
+            cat > .env <<'EOF'
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            EC2_1_PRIVATE_IP=${{ secrets.EC2_1_PRIVATE_IP }}
+            WASHGO_GATEWAY_SECRET=${{ secrets.WASHGO_GATEWAY_SECRET }}
+            RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+            RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+            RAZORPAY_CURRENCY=INR
+            EOF
 
             docker-compose -f docker-compose.ec2-2.yml pull
             docker-compose -f docker-compose.ec2-2.yml down
