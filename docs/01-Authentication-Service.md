@@ -2,7 +2,7 @@
 
 ## Overview
 - **Name**: auth-service
-- **Port**: 8082
+- **Port**: 8081
 - **Base URLs**: `/api/v1/auth` (public), `/internal/users` (internal)
 - **Package**: `com.washgo.auth`
 - **Database**: PostgreSQL `washgo_db` (`jdbc:postgresql://localhost:5432/washgo_db`)

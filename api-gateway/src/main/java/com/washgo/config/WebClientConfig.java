@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${washgo.auth-service.url:http://localhost:8081}")
+    @Value("${washgo.auth-service.url:http://auth-service:8081}")
     private String authServiceUrl;
 
     @Bean(name = "authServiceWebClient")

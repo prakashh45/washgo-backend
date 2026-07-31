@@ -2,7 +2,7 @@
 
 ## Service Overview
 - **Name**: catalog-service / CATALOG-SERVICE
-- **Port**: 8081
+- **Port**: 8082
 - **Base URL**: `/api/catalog`
 - **Package**: `com.washgo.catalog`
 - **Database**: PostgreSQL `washgo_catalog_db` (`jdbc:postgresql://localhost:5432/washgo_catalog_db`)

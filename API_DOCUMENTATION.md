@@ -1,6 +1,6 @@
 # WashGo Backend API Documentation
 
-Last verified from source code: 2026-07-26
+Last verified from source code: 2026-07-31
 
 This document maps the APIs currently implemented in the WashGo backend. It is based on the checked-in Spring Boot source code, not an external Swagger export.
 
@@ -8,14 +8,14 @@ This document maps the APIs currently implemented in the WashGo backend. It is b
 
 WashGo is split into multiple Spring Boot services:
 
-| Service | Main responsibility | Local profile port found in repo | Main API base paths |
+| Service | Main responsibility | Runtime port | Main API base paths |
 | --- | --- | ---: | --- |
 | API Gateway | Public entry point, Firebase auth, request forwarding | 8080 | Gateway routes |
-| Auth Service | Firebase user sync and user identity persistence | 8082 in `application-local.properties` | `/api/v1/auth`, `/internal/users` |
-| Catalog Service | Laundry partners and laundry services | 8081 in `application-local.properties` | `/api/catalog` |
-| Order Service | Cart, order placement, order lookup, order status | 8083 in Docker Compose | `/api/v1/cart`, `/api/v1/orders` |
-| Logistics Service | Delivery partners and delivery assignment workflow | 8084 | `/api/v1/delivery-partners`, `/api/v1/assignments` |
-| Payment Service | Payment records, verification, refund, Razorpay integration | 8085 | `/api/v1/payments`, `/api/v1/razorpay` |
+| Auth Service | Firebase user sync and user identity persistence | 8081 | `/api/v1/auth`, `/internal/users` |
+| Catalog Service | Laundry partners and laundry services | 8082 | `/api/catalog` |
+| Order Service | Cart, order placement, order lookup, order status | 8083 | `/api/v1/cart`, `/api/v1/orders` |
+| Payment Service | Payment records, verification, refund, Razorpay integration | 8084 | `/api/v1/payments`, `/api/v1/razorpay` |
+| Logistics Service | Delivery partners and delivery assignment workflow | 8085 | `/api/v1/delivery-partners`, `/api/v1/assignments` |
 | Notification Service | Order placed notification endpoint | 8086 | `/api/v1/notifications` |
 | Config Server | Externalized config | 8888 | Spring Cloud Config |
 | Discovery Server | Eureka service discovery | 8761 | Eureka UI/API |
@@ -55,18 +55,13 @@ After validating Firebase, the gateway injects these internal headers before for
 
 Do not expose or manually send `X-Gateway-Key` from frontend clients. It is intended for internal gateway-to-service calls.
 
-## 3. Important Current Routing Issues
+## 3. Important Current Implementation Issues
 
-These are real mismatches found in the current source. Fix these before relying fully on gateway testing.
+These are remaining implementation gaps found in the current source.
 
 | Area | Current code | Impact |
 | --- | --- | --- |
-| Auth local port | Auth local config says `8082`, but gateway local route sends auth traffic to `8081` | `/api/v1/auth/**` may route to the wrong service locally |
-| Catalog local port | Catalog local config says `8081`, but gateway local route sends catalog traffic to `8082` | Catalog may route to the wrong service locally |
-| Catalog path | Controllers use `/api/catalog/**`, but gateway route expects `/api/v1/catalog/**` | Catalog APIs may not work through gateway until path or route is aligned |
-| Gateway user sync | Gateway `AuthServiceClient` calls `/internal/auth/sync`, but auth controller exposes `/internal/users/sync` | Gateway auth flow may fail after Firebase validation |
 | Logistics pickup | Order service calls `LOGISTICS-SERVICE /api/v1/logistics/pickup`, but that controller currently exists under order-service source, not logistics-service source | Order placement logistics callback can hit 404 or fallback |
-| Logistics gateway route | Gateway only routes `/api/v1/logistics/**`, while real logistics APIs are `/api/v1/delivery-partners/**` and `/api/v1/assignments/**` | Delivery partner and assignment APIs are not reachable through gateway unless routes are added |
 | Delivery partner status update | `PATCH /api/v1/delivery-partners/{id}/status` returns `null` from service | Endpoint exists but response/body behavior is broken |
 | Payment event publishing | `PaymentEventProducer` exists, but `PaymentServiceImpl` does not call it | Verifying payment will not automatically publish `payment-success` to update order payment status |
 | Order event fields | `OrderCreatedEvent.eventId` and `createdAt` are not set in `OrderServiceImpl` | Notification idempotency consumer expects `eventId` and may fail on null |
@@ -1201,19 +1196,14 @@ Use this order when testing with Postman or frontend integration:
 - Secrets are currently present in local property files. Move database passwords, mail passwords, gateway secret, Firebase credentials, and Razorpay keys to environment variables or a secure secret manager before production.
 - Frontend clients should only call the API Gateway.
 - Internal services should reject direct public calls unless intentionally exposed.
-- Align gateway routes with controller paths before frontend integration.
+- Docker deployment profiles now use service names and environment variables for hosted config.
 - Add OpenAPI/Swagger documentation once routes are stable.
 
 ## 19. Suggested Fix Priority
 
-1. Fix gateway auth sync URL from `/internal/auth/sync` to `/internal/users/sync`.
-2. Align Auth and Catalog local ports or gateway routes.
-3. Decide whether Catalog path should be `/api/catalog` or `/api/v1/catalog`, then make gateway and controllers match.
-4. Move `/api/v1/logistics/pickup` controller into logistics-service or change Feign client target.
-5. Add gateway routes for `/api/v1/delivery-partners/**` and `/api/v1/assignments/**`.
-6. Implement `DeliveryPartnerServiceImpl.updateStatus`.
-7. Wire `PaymentEventProducer` into successful payment verification.
-8. Set `eventId` and `createdAt` when publishing `OrderCreatedEvent`.
-9. Connect `NotificationController` to `NotificationServiceImpl`.
-10. Move all secrets out of checked-in property files.
-
+1. Move `/api/v1/logistics/pickup` controller into logistics-service or change Feign client target.
+2. Implement `DeliveryPartnerServiceImpl.updateStatus`.
+3. Wire `PaymentEventProducer` into successful payment verification.
+4. Set `eventId` and `createdAt` when publishing `OrderCreatedEvent`.
+5. Connect `NotificationController` to `NotificationServiceImpl`.
+6. Move all secrets out of checked-in property files.

@@ -9,12 +9,15 @@ services:
       - "8084:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+      SPRING_CONFIG_IMPORT: optional:configserver:http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP:-172.31.42.90}:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP:-172.31.42.90}:9092
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:?Set RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:?Set RAZORPAY_KEY_SECRET}
+      RAZORPAY_CURRENCY: ${RAZORPAY_CURRENCY:-INR}
 
   logistics-service:
     image: ghcr.io/prakashh45/logistics-service:latest
@@ -24,12 +27,12 @@ services:
       - "8085:8085"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+      SPRING_CONFIG_IMPORT: optional:configserver:http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP:-172.31.42.90}:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP:-172.31.42.90}:9092
 
   notification-service:
     image: ghcr.io/prakashh45/notification-service:latest
@@ -39,13 +42,12 @@ services:
       - "8086:8086"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_CONFIG_IMPORT: optional:configserver:http://172.31.42.90:8888
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://172.31.42.90:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.42.90:5432/washgo_db
+      SPRING_CONFIG_IMPORT: optional:configserver:http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP:-172.31.42.90}:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP:-172.31.42.90}:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: 172.31.42.90:9092
-      FIREBASE_CREDENTIALS_BASE64: firebase-service-account
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP:-172.31.42.90}:9092
 
 networks:
   default:

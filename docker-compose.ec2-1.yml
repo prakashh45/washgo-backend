@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   postgres:
@@ -9,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: washgo_db
       POSTGRES_USER: washgo
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
     ports:
       - "5432:5432"
     volumes:
@@ -25,7 +23,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.31.42.90:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP:-172.31.42.90}:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -62,6 +60,8 @@ services:
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WASHGO_GATEWAY_SECRET: ${WASHGO_GATEWAY_SECRET:-default-gateway-secret-key-12345}
+      FIREBASE_CREDENTIALS_BASE64: ${FIREBASE_CREDENTIALS_BASE64:?Set FIREBASE_CREDENTIALS_BASE64}
     depends_on:
       - discovery-server
       - auth-service
@@ -79,7 +79,8 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      FIREBASE_CREDENTIALS_BASE64: ${FIREBASE_CREDENTIALS_BASE64:?Set FIREBASE_CREDENTIALS_BASE64}
     depends_on:
       - discovery-server
 
@@ -95,7 +96,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
     depends_on:
       - discovery-server
 
@@ -111,9 +112,9 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/washgo_db
       SPRING_DATASOURCE_USERNAME: washgo
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      FIREBASE_CREDENTIALS_BASE64: firebase-service-account
+      WASHGO_GATEWAY_SECRET: ${WASHGO_GATEWAY_SECRET:-default-gateway-secret-key-12345}
     depends_on:
       - discovery-server
 

@@ -2,7 +2,7 @@
 
 ## Service Overview
 - **Name**: payment-service
-- **Port**: 8085
+- **Port**: 8084
 - **Base URL**: `/api/v1/payments`, `/api/v1/razorpay`
 - **Package**: `com.washgo`
 - **Database**: PostgreSQL `washgo_payment_db` (`jdbc:postgresql://localhost:5432/washgo_payment_db`)

@@ -27,11 +27,11 @@ graph TD
     Client[Mobile/Web Clients] -->|HTTPS| Nginx[Nginx Proxy :80]
     Nginx --> Gateway[Spring Cloud API Gateway :8080]
     
-    Gateway -->|Firebase Auth Filter| Auth[Auth Service :8082]
-    Gateway --> Catalog[Catalog Service :8081]
+    Gateway -->|Firebase Auth Filter| Auth[Auth Service :8081]
+    Gateway --> Catalog[Catalog Service :8082]
     Gateway --> Order[Order Service]
-    Gateway --> Logistics[Logistics Service :8084]
-    Gateway --> Payment[Payment Service :8085]
+    Gateway --> Payment[Payment Service :8084]
+    Gateway --> Logistics[Logistics Service :8085]
     Gateway --> Notification[Notification Service :8086]
     
     Auth --> DB_Auth[(washgo_db)]
@@ -67,11 +67,11 @@ graph TD
 
 ### Microservices
 
-1. **Auth Service (Port 8082)**: Manages Firebase authentication, user synchronization, role management, and JWT handling.
-2. **Catalog Service (Port 8081)**: Manages laundry partners, services, items, and pricing structures.
+1. **Auth Service (Port 8081)**: Manages Firebase authentication, user synchronization, role management, and JWT handling.
+2. **Catalog Service (Port 8082)**: Manages laundry partners, services, items, and pricing structures.
 3. **Order Service**: Handles order placement, cart management, status updates, and order tracking. (Port dynamically resolved via Config Server).
-4. **Logistics Service (Port 8084)**: Manages delivery partner assignments, OTP verifications, and delivery status.
-5. **Payment Service (Port 8085)**: Manages payments, Razorpay integration, refunds, and transaction logging.
+4. **Payment Service (Port 8084)**: Manages payments, Razorpay integration, refunds, and transaction logging.
+5. **Logistics Service (Port 8085)**: Manages delivery partner assignments, OTP verifications, and delivery status.
 6. **Notification Service (Port 8086)**: Responsible for sending email, SMS, and push notifications acting as a consumer of various Kafka topics.
 
 ### Shared Infrastructure
@@ -88,13 +88,12 @@ All client requests are routed through the API Gateway (`https://api.washgo.in`)
 
 | Service | Route Pattern | Target Destination |
 |---------|--------------|-------------------|
-| **Auth** | `/api/v1/auth/**` | `localhost:8081` (Gateway routed) |
-| **Catalog** | `/api/v1/catalog/**` | `localhost:8082` |
-| **Order** | `/api/v1/orders/**` | `localhost:8083` |
-| **Logistics** | `/api/v1/logistics/**` | `localhost:8084` |
-| **Payment** | `/api/v1/payments/**` | `localhost:8085` |
-| **Razorpay** | `/api/v1/razorpay/**` | `localhost:8085` |
-| **Notification**| `/api/v1/notifications/**`| `localhost:8086` |
+| **Auth** | `/api/v1/auth/**` | `auth-service:8081` |
+| **Catalog** | `/api/catalog/**`, `/api/v1/catalog/**` | `catalog-service:8082` |
+| **Order** | `/api/v1/orders/**`, `/api/v1/cart/**` | `order-service:8083` |
+| **Payment** | `/api/v1/payments/**`, `/api/v1/razorpay/**` | `payment-service:8084` |
+| **Logistics** | `/api/v1/delivery-partners/**`, `/api/v1/assignments/**` | `logistics-service:8085` |
+| **Notification**| `/api/v1/notifications/**`| `notification-service:8086` |
 
 ---
 
@@ -111,7 +110,7 @@ sequenceDiagram
     
     Client->>Gateway: Request with "Authorization: Bearer <Firebase_JWT>"
     Gateway->>Gateway: Validates token via Firebase Admin SDK
-    Gateway->>Auth: Internal call to sync user `/internal/auth/sync`
+    Gateway->>Auth: Internal call to sync user `/internal/users/sync`
     Auth-->>Gateway: Returns User Sync Details (Id, Roles)
     Gateway->>Service: Forwards request with Headers (`X-User-Id`, `X-User-Role`, `X-Firebase-Uid`)
     Service->>Service: GatewayAuthenticationFilter populates `UserContextHolder`
