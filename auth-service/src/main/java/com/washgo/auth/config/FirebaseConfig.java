@@ -4,30 +4,33 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Base64;
 
 @Configuration
 public class FirebaseConfig {
 
+    @Value("${firebase.credentials.base64:}")
+    private String firebaseCredentialsBase64;
+
     @PostConstruct
     public void initialize() {
-
         try {
-
             if (!FirebaseApp.getApps().isEmpty()) {
                 return;
             }
 
-            InputStream serviceAccount = FirebaseConfig.class
-                    .getClassLoader()
-                    .getResourceAsStream("firebase/serviceAccountKey.json");
-
-            if (serviceAccount == null) {
+            if (firebaseCredentialsBase64 == null || firebaseCredentialsBase64.isBlank()) {
                 throw new RuntimeException(
-                        "Could not find firebase/serviceAccountKey.json in resources");
+                        "FIREBASE_CREDENTIALS_BASE64 env var / firebase.credentials.base64 property is not set");
             }
+
+            byte[] decoded = Base64.getDecoder().decode(firebaseCredentialsBase64);
+            InputStream serviceAccount = new ByteArrayInputStream(decoded);
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -44,4 +47,4 @@ public class FirebaseConfig {
             throw new RuntimeException("Firebase initialization failed", e);
         }
     }
-    }
+}
