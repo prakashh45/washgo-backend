@@ -148,8 +148,8 @@ firebase-adminsdk*.json
 
 # Firebase Service Account
 **/firebase-service-account.json
-firebase-service-account.json
-
+**/serviceAccountKey.json
+**/firebase/*.json
 # ===========================================
 # SonarQube
 # ===========================================
