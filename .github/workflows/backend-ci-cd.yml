@@ -141,6 +141,9 @@ jobs:
             EC2_1_PRIVATE_IP=${{ secrets.EC2_1_PRIVATE_IP }}
             WASHGO_GATEWAY_SECRET=${{ secrets.WASHGO_GATEWAY_SECRET }}
             FIREBASE_CREDENTIALS_BASE64=${{ secrets.API_GATEWAY_FIREBASE_B64 }}
+            PAYMENT_SERVICE_URL=${{ secrets.PAYMENT_SERVICE_URL }}
+            LOGISTICS_SERVICE_URL=${{ secrets.LOGISTICS_SERVICE_URL }}
+            NOTIFICATION_SERVICE_URL=${{ secrets.NOTIFICATION_SERVICE_URL }}
             EOF
 
             docker compose -f docker-compose.ec2-1.yml pull
