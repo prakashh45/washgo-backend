@@ -17,6 +17,9 @@ public class DeliveryAssignmentMapper {
         response.setDeliveryPartnerId(
                 assignment.getDeliveryPartner().getId()
         );
+        response.setDeliveryPartnerName(
+                assignment.getDeliveryPartner().getDeliveryPartnerName()
+        );
 
         response.setLegType(assignment.getLegType());
         response.setStatus(assignment.getStatus());

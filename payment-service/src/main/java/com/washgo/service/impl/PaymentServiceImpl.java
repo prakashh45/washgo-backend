@@ -8,6 +8,9 @@ import com.washgo.dto.response.PaymentResponse;
 import com.washgo.entity.Payment;
 import com.washgo.enums.PaymentStatus;
 import com.washgo.exception.ResourceNotFoundException;
+import com.washgo.kafka.event.PaymentCreatedEvent;
+import com.washgo.kafka.event.PaymentSuccessEvent;
+import com.washgo.kafka.producer.PaymentEventProducer;
 import com.washgo.repository.PaymentRepository;
 import com.washgo.service.PaymentService;
 import com.washgo.util.PaymentNumberGenerator;
@@ -15,6 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ import java.util.List;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentEventProducer paymentEventProducer;
 
 
     @Override
@@ -47,6 +52,15 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
+        paymentEventProducer.publishPaymentCreated(PaymentCreatedEvent.builder()
+                .paymentNumber(savedPayment.getPaymentNumber())
+                .orderId(savedPayment.getOrderId())
+                .customerId(savedPayment.getCustomerId())
+                .amount(savedPayment.getAmount())
+                .paymentMethod(savedPayment.getPaymentMethod())
+                .paymentStatus(savedPayment.getPaymentStatus())
+                .build());
+
         return mapToResponse(savedPayment);
     }
     @Override
@@ -71,8 +85,10 @@ public class PaymentServiceImpl implements PaymentService {
                 request.getGatewayTransactionId());
 
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
+        payment.setPaidAt(LocalDateTime.now());
 
         Payment updated = paymentRepository.save(payment);
+        publishPaymentSuccess(updated);
 
         return mapToResponse(updated);
     }
@@ -169,10 +185,22 @@ public class PaymentServiceImpl implements PaymentService {
                 request.getRazorpayPaymentId());
 
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
+        payment.setPaidAt(LocalDateTime.now());
 
         Payment updated = paymentRepository.save(payment);
+        publishPaymentSuccess(updated);
 
         return mapToResponse(updated);
+    }
+
+    private void publishPaymentSuccess(Payment payment) {
+        paymentEventProducer.publishPaymentSuccess(PaymentSuccessEvent.builder()
+                .paymentNumber(payment.getPaymentNumber())
+                .orderId(payment.getOrderId())
+                .customerId(payment.getCustomerId())
+                .amount(payment.getAmount())
+                .gatewayTransactionId(payment.getGatewayTransactionId())
+                .build());
     }
 
     private PaymentResponse mapToResponse(Payment payment) {

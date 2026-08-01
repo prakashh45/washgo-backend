@@ -12,6 +12,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U washgo -d washgo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   kafka:
     image: apache/kafka:latest
@@ -64,6 +69,7 @@ services:
       FIREBASE_CREDENTIALS_BASE64: ${FIREBASE_CREDENTIALS_BASE64:?Set FIREBASE_CREDENTIALS_BASE64}
     depends_on:
       - discovery-server
+      - postgres
       - auth-service
       - catalog-service
 
@@ -83,6 +89,7 @@ services:
       FIREBASE_CREDENTIALS_BASE64: ${FIREBASE_CREDENTIALS_BASE64:?Set FIREBASE_CREDENTIALS_BASE64}
     depends_on:
       - discovery-server
+      - postgres
 
   catalog-service:
     image: ghcr.io/prakashh45/catalog-service:latest
@@ -99,6 +106,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-root}
     depends_on:
       - discovery-server
+      - postgres
 
   order-service:
     image: ghcr.io/prakashh45/order-service:latest
@@ -117,6 +125,8 @@ services:
       WASHGO_GATEWAY_SECRET: ${WASHGO_GATEWAY_SECRET:-default-gateway-secret-key-12345}
     depends_on:
       - discovery-server
+      - postgres
+      - kafka
 
 
 

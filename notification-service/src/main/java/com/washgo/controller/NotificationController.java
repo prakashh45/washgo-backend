@@ -1,26 +1,47 @@
 package com.washgo.controller;
 
 import com.washgo.dto.NotificationRequest;
+import com.washgo.dto.NotificationResponse;
+import com.washgo.service.NotificationService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
 
+    private final NotificationService notificationService;
+
     @PostMapping("/order-placed")
-    public ResponseEntity<String> sendOrderPlacedNotification(
-            @RequestBody NotificationRequest request) {
+    public ResponseEntity<NotificationResponse> sendOrderPlacedNotification(
+            @Valid @RequestBody NotificationRequest request) {
 
-        System.out.println("======================================");
-        System.out.println("Order Placed Notification");
-        System.out.println("User ID    : " + request.getUserId());
-        System.out.println("Recipient  : " + request.getRecipient());
-        System.out.println("Title      : " + request.getTitle());
-        System.out.println("Message    : " + request.getMessage());
-        System.out.println("Type       : " + request.getType());
-        System.out.println("======================================");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(notificationService.sendNotification(request));
+    }
 
-        return ResponseEntity.ok("Notification Sent Successfully");
+    @GetMapping
+    public ResponseEntity<List<NotificationResponse>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<NotificationResponse> getNotificationById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(notificationService.getNotificationById(id));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<NotificationResponse>> getNotificationsByUser(
+            @PathVariable String userId) {
+
+        return ResponseEntity.ok(notificationService.getNotificationsByUser(userId));
     }
 }

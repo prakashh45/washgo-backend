@@ -1,7 +1,6 @@
 package com.washgo.kafka.event;
 
 
-import com.washgo.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +24,4 @@ public class PaymentSuccessEvent {
     private BigDecimal amount;
 
     private String gatewayTransactionId;
-
-    private PaymentStatus paymentStatus;
 }

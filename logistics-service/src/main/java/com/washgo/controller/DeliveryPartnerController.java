@@ -54,7 +54,7 @@ public class DeliveryPartnerController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<DeliveryPartnerResponse> updateStatus(
             @PathVariable Long id,
-            @RequestBody UpdateStatusRequest request) {
+            @Valid @RequestBody UpdateStatusRequest request) {
 
         return ResponseEntity.ok(
                 deliveryPartnerService.updateStatus(id, request));

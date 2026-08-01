@@ -122,7 +122,17 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
     @Override
     public DeliveryPartnerResponse updateStatus(Long id, UpdateStatusRequest request) {
-        return null;
+        if (request.getStatus() == null) {
+            throw new IllegalArgumentException("Status is required");
+        }
+
+        DeliveryPartner partner = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Delivery Partner not found"));
+
+        partner.setStatus(request.getStatus());
+        partner.setAvailable(request.getStatus() == DeliveryPartnerStatus.ACTIVE);
+
+        return mapToResponse(repository.save(partner));
     }
 
     private DeliveryPartnerResponse mapToResponse(DeliveryPartner partner) {

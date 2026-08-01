@@ -24,9 +24,11 @@
     import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
     import com.washgo.kafka.OrderEventProducer;
     import com.washgo.common.event.OrderCreatedEvent;
-    import java.math.BigDecimal;
-    import java.util.ArrayList;
-    import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
     @Service
     @RequiredArgsConstructor
     public class OrderServiceImpl implements OrderService {
@@ -87,6 +89,7 @@
 
             Order savedOrder = orderRepository.save(order);
             OrderCreatedEvent event = OrderCreatedEvent.builder()
+                    .eventId(UUID.randomUUID())
                     .orderId(savedOrder.getId())
                     .orderNumber(savedOrder.getOrderNumber())
                     .customerId(savedOrder.getCustomerId())
@@ -94,6 +97,7 @@
                     .totalAmount(savedOrder.getTotalAmount())
                     .paymentMethod(savedOrder.getPaymentMethod())
                     .orderStatus(savedOrder.getOrderStatus())
+                    .createdAt(LocalDateTime.now())
                     .build();
 
             orderEventProducer.publishOrderCreated(event);
@@ -226,6 +230,7 @@
         }
 
         @Override
+        @Transactional
         public void markPaymentSuccess(Long orderId, String paymentNumber) {
 
             Order order = orderRepository.findById(orderId)
