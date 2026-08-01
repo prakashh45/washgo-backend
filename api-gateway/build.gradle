@@ -58,9 +58,9 @@ dependencies {
     // Jackson
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    // --- gRPC fix: required by Spring Cloud Gateway's GrpcSslConfigurer /
-    // JsonToGRPCFilterFactory autoconfiguration, even when no gRPC routes are used ---
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    // Required by Spring Cloud Gateway's GrpcSslConfigurer /
+    // JsonToGRPCFilterFactory autoconfiguration, even when no gRPC routes are used.
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
 
